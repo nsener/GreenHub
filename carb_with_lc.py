@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-Created on Fri Mar 12 09:24:10 2021
-ver=1.2  mar 13 carbon emission amounts of arrivals are added.
+Created on Fri Mar 14 00:30:10 2021
+ver=1.0  
 @author: NS
 """
 
@@ -12,11 +12,10 @@ from decimal import getcontext
 import sys
 from itertools import product
 import plotly.graph_objects as go
-import json
 from os import path
 import os
 import csv
-
+import json
 
 def write_to_file(fname, data_dict, is_header):
     with open(fname, 'a') as csvfile:
@@ -25,20 +24,20 @@ def write_to_file(fname, data_dict, is_header):
             writer.writeheader()
         writer.writerow(data_dict)
 
+
+
 getcontext().prec = 4
 #distance read from excel
-file='datasets/flcd.xls'
+file='flcd.xls'
 xl=pd.ExcelFile(file)
 dist=xl.parse('Fixed_link_cost')
 dist=np.array(dist)
 
 #demand read from excel
-file='datasets/hfa.xls'
+file='hfa.xls'
 xl=pd.ExcelFile(file)
 dem=xl.parse('Fixed_link_cost')
 dem=np.array(dem)
-
-
 
 nnode=len(dem[1,:])
 #nnode=13
@@ -80,12 +79,13 @@ for k in range(nnode):
     for i in range(nnode):
         d[k]=d[k]+dem[i,k]
         
-
-params = np.loadtxt("carb_params.csv", delimiter=",", skiprows=0)
+params = np.loadtxt("carb_paramslc.csv", delimiter=",", skiprows=0)
 all_results=[]
-result_file = os.path.join("results", "result_unc_w.csv")
+result_file = os.path.join("results", "result_lc_w.csv")        
+
 for case_idx, param in enumerate(params):
-    rho, alpha, perc, fixcos = param
+    rho, alpha, perc, fixcos, capl = param        
+
     A={}
     distmax=dist.max()
     for i in Cset:
@@ -94,13 +94,15 @@ for case_idx, param in enumerate(params):
                 A[i,k]=1
             else:
                 A[i,k]=0
-
+    
+    
+    
     fixedCost={} 
     for i in Cset:
                     fixedCost[i]=fixcos
     detmas= Model("detmas")
     detmas.params.outputflag=0
-
+    
     #decision variables
     hopen = {} 
     for p in Cset:
@@ -119,7 +121,7 @@ for case_idx, param in enumerate(params):
         for l in Cset:
             for j in Cset:
                 q[i,l,j]=detmas.addVar(obj=c[l,j]+rho*ct[i,l,j],name='q%s.%s.%s' % (i,l,j))
-
+    
                     
     #constraints
     sumdem={}
@@ -135,7 +137,7 @@ for case_idx, param in enumerate(params):
         for j in Cset:
             quell[i,j]=sum(q[i,l,j] for l in Cset if A[i,l]*A[l,j]==1)
             qsumdem[i,j]=detmas.addConstr(quell[i,j] ==dem[i,j], "qdem%s.%s" % (i,j) )
-
+    
     #flow ensure constraint
     floens={}
     y1ell={}
@@ -163,19 +165,35 @@ for case_idx, param in enumerate(params):
         for k in Cset:
             if A[i,k]==1:
                 covcot[i,k]=detmas.addConstr(z[i,k]<=quicksum(dem[i,j]*hopen[k] for j in Cset), "covct%s.%s" % (i,k))
+    
+    otop=sum(o[i] for i  in Cset)            
+    capconl1={}
+    for i in Cset:
+        for k in Cset:
+            if A[i,k]==1:
+                capconl1[k]=detmas.addConstr(z[i,k] <= ((1-hopen[i])*capl+ otop*hopen[i]) )
+            
+    capconl2={}
+    for l in Cset:
+        for j in Cset:
+            if A[l,j]==1:
+                capconl2[l,j]=detmas.addConstr(quicksum(q[i,l,j] for i in Cset) <= ((1-hopen[j])*capl+ otop*hopen[j]))
+             
                 
-
+     
     detmas.modelSense = GRB.MINIMIZE
     detmas.Params.MIPGap=1e-6
     detmas.update() 
     detmas.optimize()
-
+    
     numhum={}  
     i=0            
     for p in Cset:
         if round(hopen[p].x)!=0:
-            numhum[p]=round(hopen[p].x)         
-
+            numhum[p]=round(hopen[p].x)
+    
+          
+    
     carbrel={}
     carbem=0
     for i in Cset:
@@ -183,29 +201,11 @@ for case_idx, param in enumerate(params):
         for k in Cset:
             carbem+=ce[i,k]*z[i,k].x
             for l in Cset:
-                carbem+=ct[i,k,l]*(y[i,k,l].x+q[i,k,l].x)  
-            
-
-    print("Writing results")
-
-    new_data = {}
-    new_data["CO2EmissionUnitCost"] = rho
-    new_data["InterhubDiscountFactor"] = alpha
-    new_data["CoveringRadius"] = perc
-    new_data["HubOpeningCost"] = fixcos
-    new_data["TotalCost"] = detmas.objVal
-    new_data["TotalWithoutCO2Cost"] = detmas.objVal-rho*carbem
-    new_data["TotalCarbonEmission"] = carbem
-    new_data["OpenedHubLocs"] = numhum
-    new_data["DemandCo2Emission"] = carbrel
-    new_data["RunTime"] = detmas.runtime
-    all_results.append(new_data)
-    write_to_file(result_file, new_data, case_idx==0)
-
-    fname = "det_carb.json"
+              carbem+=ct[i,k,l]*(y[i,k,l].x+q[i,k,l].x)  
+              
     df = pd.read_csv(r"C:\Users\Administrator\Desktop\Python\locations.csv")
     opened_hub_nos = list(numhum.keys())   
-   # print(opened_hub_nos)
+    #print(opened_hub_nos)
     df_draw_squares = df.loc[opened_hub_nos, :]   # bunlar yazdrlacak locasyonlar
     
     
@@ -290,10 +290,27 @@ for case_idx, param in enumerate(params):
                     xanchor="center",
                     x=0.50)
         )
-    fig.write_image('images/lc/'+str(rho)+str(alpha)+str(perc)+str(fixcos)+'.pdf')
+    fig.write_image('images/lc/'+str(capl)+str(rho)+str(alpha)+str(perc)+str(fixcos)+'.pdf')
     
-
-result_file = os.path.join('results', 'carb_unc_w.json')
+              
+    print("Writing results for instance {}")
+    
+    new_data = {}
+    new_data["MaximumLinkCapacity"] = capl
+    new_data["CO2EmissionUnitCost"] = rho
+    new_data["InterhubDiscountFactor"] = alpha
+    new_data["CoveringRadius"] = perc
+    new_data["HubOpeningCost"] = fixcos
+    new_data["TotalCost"] = detmas.objVal
+    new_data["TotalWithoutCO2Cost"] = detmas.objVal-rho*carbem
+    new_data["TotalCarbonEmission"] = carbem
+    new_data["OpenedHubLocs"] = numhum
+    new_data["DemandCo2Emission"] = carbrel
+    new_data["RunTime"] = detmas.runtime
+    all_results.append(new_data)
+    write_to_file(result_file, new_data, case_idx==0)
+    
+    fname = "det_carb_lc.json"
+result_file = os.path.join('results', 'carb_lc_w.json')
 with open(result_file, 'w') as outfile:
     json.dump(all_results, outfile)
-        
