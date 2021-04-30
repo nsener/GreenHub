@@ -202,95 +202,95 @@ for case_idx, param in enumerate(params):
     all_results.append(new_data)
     write_to_file(result_file, new_data, case_idx==0)
 
-    fname = "det_carb.json"
-    df = pd.read_csv(r"C:\Users\Administrator\Desktop\Python\locations.csv")
-    opened_hub_nos = list(numhum.keys())   
-   # print(opened_hub_nos)
-    df_draw_squares = df.loc[opened_hub_nos, :]   # bunlar yazdrlacak locasyonlar
+#     fname = "det_carb.json"
+#     df = pd.read_csv(r"C:\Users\Administrator\Desktop\Python\locations.csv")
+#     opened_hub_nos = list(numhum.keys())   
+#    # print(opened_hub_nos)
+#     df_draw_squares = df.loc[opened_hub_nos, :]   # bunlar yazdrlacak locasyonlar
     
     
     
-    df['text'] = df['airport'] + '' + df['city'] + ', ' + df['state'] + '' + 'Arrivals: ' 
-    df['cnt']=df.index.to_series().map(carbrel)
-    df['cnt'].astype(str)
-    fig = go.Figure()
+#     df['text'] = df['airport'] + '' + df['city'] + ', ' + df['state'] + '' + 'Arrivals: ' 
+#     df['cnt']=df.index.to_series().map(carbrel)
+#     df['cnt'].astype(str)
+#     fig = go.Figure()
     
-    fig.add_trace(go.Scattergeo(
-            locationmode = 'USA-states',
-            lon = df['long'],
-            lat = df['lat'],
-            showlegend=False,
-            text = df['text'],
-            mode = 'markers',
-            marker = dict(
-                size = 8,
-                opacity = 0.8,
-                reversescale = True,
-                autocolorscale = False,
-                symbol = 'square',
-                line = dict(
-                    width=0,
-                    color='rgba(102, 102, 102)'
-                ),
-                colorscale = [[0, 'rgb(0,60,0)'], [0.5, 'rgb(0,128,0)'], [1, 'rgb(0,255,0)']],
-                cmin = 0,
-                color = df['cnt'],
-                cmax = 2300 ,
-                colorbar_title="" )))
+#     fig.add_trace(go.Scattergeo(
+#             locationmode = 'USA-states',
+#             lon = df['long'],
+#             lat = df['lat'],
+#             showlegend=False,
+#             text = df['text'],
+#             mode = 'markers',
+#             marker = dict(
+#                 size = 8,
+#                 opacity = 0.8,
+#                 reversescale = True,
+#                 autocolorscale = False,
+#                 symbol = 'square',
+#                 line = dict(
+#                     width=0,
+#                     color='rgba(102, 102, 102)'
+#                 ),
+#                 colorscale = [[0, 'rgb(0,60,0)'], [0.5, 'rgb(0,128,0)'], [1, 'rgb(0,255,0)']],
+#                 cmin = 0,
+#                 color = df['cnt'],
+#                 cmax = 2300 ,
+#                 colorbar_title="" )))
     
-    df_draw_squares['cnt'] = [0]*len(df_draw_squares)
-    print(df_draw_squares)
-    fig.add_trace(go.Scattergeo(
-            name="Opened Hubs",
-            locationmode = 'USA-states',
-            lon = df_draw_squares['long'],
-            lat = df_draw_squares['lat'],
-            mode = 'markers',
-            marker = dict(
-                size = 11.0,
-                opacity = 1.0,
-                reversescale = False,
-                autocolorscale = False,
-                color='green',
-                symbol = 'circle-open',
-                line = dict(
-                    width=1,
-                    color='green'
-                ))))
+#     df_draw_squares['cnt'] = [0]*len(df_draw_squares)
+#     print(df_draw_squares)
+#     fig.add_trace(go.Scattergeo(
+#             name="Opened Hubs",
+#             locationmode = 'USA-states',
+#             lon = df_draw_squares['long'],
+#             lat = df_draw_squares['lat'],
+#             mode = 'markers',
+#             marker = dict(
+#                 size = 11.0,
+#                 opacity = 1.0,
+#                 reversescale = False,
+#                 autocolorscale = False,
+#                 color='green',
+#                 symbol = 'circle-open',
+#                 line = dict(
+#                     width=1,
+#                     color='green'
+#                 ))))
     
     
-    fig.update_layout(
-            geo = dict(
-                scope='usa',
-                projection_type='albers usa',
-                showland = True,
-                landcolor = "rgb(250, 250, 250)",
-                subunitcolor = "rgb(217, 217, 217)",
-                countrycolor = "rgb(217, 217, 217)",
-                countrywidth = 0.5,
-                subunitwidth = 0.5
-            ),  annotations=[dict(
-              # Don't specify y position,because yanchor="middle" do it for you
-              x=1.02,
-              align="right",
-              valign="top",
-              text='Carbon Emissions (kg/year)',
-              showarrow=False,
-              xref="paper",
-              yref="paper",
-              xanchor="right",
-              yanchor="middle",
-              # Parameter textangle allow you to rotate annotation how you want
-              textangle=-90
-            )
-        ], 
-            legend=dict(
-                    yanchor="top",
-                    y=0.99,
-                    xanchor="center",
-                    x=0.50)
-        )
-    fig.write_image('images/lc/'+str(rho)+str(alpha)+str(perc)+str(fixcos)+'.pdf')
+#     fig.update_layout(
+#             geo = dict(
+#                 scope='usa',
+#                 projection_type='albers usa',
+#                 showland = True,
+#                 landcolor = "rgb(250, 250, 250)",
+#                 subunitcolor = "rgb(217, 217, 217)",
+#                 countrycolor = "rgb(217, 217, 217)",
+#                 countrywidth = 0.5,
+#                 subunitwidth = 0.5
+#             ),  annotations=[dict(
+#               # Don't specify y position,because yanchor="middle" do it for you
+#               x=1.02,
+#               align="right",
+#               valign="top",
+#               text='Carbon Emissions (kg/year)',
+#               showarrow=False,
+#               xref="paper",
+#               yref="paper",
+#               xanchor="right",
+#               yanchor="middle",
+#               # Parameter textangle allow you to rotate annotation how you want
+#               textangle=-90
+#             )
+#         ], 
+#             legend=dict(
+#                     yanchor="top",
+#                     y=0.99,
+#                     xanchor="center",
+#                     x=0.50)
+#         )
+#     fig.write_image('images/lc/'+str(rho)+str(alpha)+str(perc)+str(fixcos)+'.pdf')
     
 
 result_file = os.path.join('results', 'carb_unc_w.json')
