@@ -28,13 +28,13 @@ def write_to_file(fname, data_dict, is_header):
 
 getcontext().prec = 4
 #distance read from excel
-file='flcd.xls'
+file='datasets/flcd.xls'
 xl=pd.ExcelFile(file)
 dist=xl.parse('Fixed_link_cost')
 dist=np.array(dist)
 
 #demand read from excel
-file='hfa.xls'
+file='datasets/hfa.xls'
 xl=pd.ExcelFile(file)
 dem=xl.parse('Fixed_link_cost')
 dem=np.array(dem)
@@ -171,13 +171,13 @@ for case_idx, param in enumerate(params):
     for i in Cset:
         for k in Cset:
             if A[i,k]==1:
-                capconl1[k]=detmas.addConstr(z[i,k] <= ((1-hopen[i])*capl+ otop*hopen[i]) )
+                capconl1[k]=detmas.addConstr(z[i,k] <= capl)
             
     capconl2={}
     for l in Cset:
         for j in Cset:
             if A[l,j]==1:
-                capconl2[l,j]=detmas.addConstr(quicksum(q[i,l,j] for i in Cset) <= ((1-hopen[j])*capl+ otop*hopen[j]))
+                capconl2[l,j]=detmas.addConstr(quicksum(q[i,l,j] for i in Cset) <= capl)
              
                 
      
