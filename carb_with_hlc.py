@@ -181,14 +181,14 @@ for case_idx, param in enumerate(params):
         for k in Cset:
             if A[i, k] == 1:
                 capconl1[k] = detmas.addConstr(
-                    z[i, k] <= ((1-hopen[i])*capl + otop*hopen[i]))
+                    z[i, k] <= capl )
     
     capconl2 = {}
     for l in Cset:
         for j in Cset:
             if A[l, j] == 1:
                 capconl2[l, j] = detmas.addConstr(
-                    quicksum(q[i, l, j] for i in Cset) <= ((1-hopen[j])*capl + otop*hopen[j]))
+                    quicksum(q[i, l, j] for i in Cset) <= capl)
     
     capcon = {}
     for k in Cset:
