@@ -27,15 +27,15 @@ def write_to_file(fname, data_dict, is_header):
 
 getcontext().prec = 4
 #distance read from excel
-file='flcd.xls'
+file='datasets/distusa.xlsx'
 xl=pd.ExcelFile(file)
-dist=xl.parse('Fixed_link_cost')
+dist=xl.parse('Sayfa1')
 dist=np.array(dist)
 
 #demand read from excel
-file='hfa.xls'
+file='datasets/demusa.xlsx'
 xl=pd.ExcelFile(file)
-dem=xl.parse('Fixed_link_cost')
+dem=xl.parse('Sayfa1')
 dem=np.array(dem)
 
 
@@ -79,7 +79,7 @@ for k in range(nnode):
     for i in range(nnode):
         d[k]=d[k]+dem[i,k]
         
-params = np.loadtxt("carb_params.csv", delimiter=",", skiprows=0)
+params = np.loadtxt("carb_params_usa.csv", delimiter=",", skiprows=0)
 all_results=[]
 result_file = os.path.join("results", "result_unc_o.csv")        
 
